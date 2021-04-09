@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:baguette/baguette.dart';
+import 'package:baguette/core/croute.dart';
 import 'package:flutter/material.dart';
 
 mixin CRouteListenerForKey<T extends StatefulWidget> on State<T> {
@@ -10,11 +11,11 @@ mixin CRouteListenerForKey<T extends StatefulWidget> on State<T> {
 
   Widget get loadingScreen;
 
-  GlobalKey<NavigatorState> navigatorKey;
+  late GlobalKey<NavigatorState> navigatorKey;
 
-  CRoute currentCRoute;
+  late CRoute currentCRoute;
 
-  StreamSubscription _sub;
+  late StreamSubscription _sub;
 
   void Function(CRoute newCroute) get onPop;
 
@@ -22,22 +23,22 @@ mixin CRouteListenerForKey<T extends StatefulWidget> on State<T> {
   void initState() {
     super.initState();
     navigatorKey = GlobalKey<NavigatorState>();
-    _sub?.cancel();
+    _sub.cancel();
     Future.delayed(Duration.zero, _listenToRouteChanges);
   }
 
   _listenToRouteChanges() {
     handlerStream.listen((event) {
-      this.currentCRoute = event.filterForKey(this.filterKey);
-      if (this.mounted) {
-        setState(() {});
-      }
+      // this.currentCRoute = event.filterForKey(this.filterKey);
+      // if (this.mounted) {
+      //   setState(() {});
+      // }
     });
   }
 
   @override
   void dispose() {
-    _sub?.cancel();
+    _sub.cancel();
     super.dispose();
   }
 
@@ -48,7 +49,7 @@ mixin CRouteListenerForKey<T extends StatefulWidget> on State<T> {
     }
     return Router(
       routerDelegate:
-      CRouter(this.navigatorKey, this.currentCRoute, this.onPop),
+          CRouter(this.navigatorKey, this.currentCRoute, this.onPop),
     );
   }
 }

@@ -1,7 +1,10 @@
-import 'package:example/app_state.dart';
+import 'package:example/bloc/app_state.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 
 class NotFoundPage extends StatelessWidget {
+  final appStateBloc = GetIt.I.get<AppStateBloc>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,12 +13,10 @@ class NotFoundPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             RaisedButton(
-              child: Text("to Dashboard"),
-              onPressed: (){
-                AppState.I.dashboard = true;
-                AppState.I.finalizeChanges();
-              },
-            ),
+                child: Text("to Dashboard"),
+                onPressed: () {
+                  appStateBloc.toDashboard();
+                }),
             Text("not found"),
           ],
         ),
