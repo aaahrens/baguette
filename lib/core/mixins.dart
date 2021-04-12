@@ -46,14 +46,14 @@ class BaguetteMaterialRouter extends RouterDelegate<CRoute>
 
   BaguetteMaterialRouter.withListener(
       ChangeNotifier cn, this.provider, this.desktopKey) {
-    currentRoute = provider.buildFromState();
-    pages = currentRoute.toPages();
     cn.addListener(() {
+      print("inside listener");
       currentRoute = provider.buildFromState();
+      print("route returned");
+      CRoute.deepPrint(currentRoute);
       pages =
           currentRoute.filterForKey(provider.defaultValueKey)?.toPages() ?? [];
-      desktopPages =
-          currentRoute.filterForKey(provider.defaultValueKey)?.toPages() ?? [];
+      desktopPages = currentRoute.filterForKey(desktopKey)?.toPages() ?? [];
       notifyListeners();
     });
   }
@@ -74,6 +74,7 @@ class BaguetteMaterialRouter extends RouterDelegate<CRoute>
               if (!route.didPop(result)) {
                 return false;
               }
+              print("calling pop");
               currentRoute.handlePop();
               currentRoute.handleRedirect();
               currentRoute = provider.buildFromState();
@@ -91,6 +92,9 @@ class BaguetteMaterialRouter extends RouterDelegate<CRoute>
             if (!route.didPop(result)) {
               return false;
             }
+            print("calling pop");
+            CRoute.deepPrint(currentRoute);
+            currentRoute.handlePop();
             currentRoute.handleRedirect();
             currentRoute = this.provider.buildFromState();
             notifyListeners();
@@ -106,8 +110,12 @@ class BaguetteMaterialRouter extends RouterDelegate<CRoute>
 
   @override
   Future<void> setNewRoutePath(CRoute configuration) async {
-    configuration.initState();
     this.currentRoute = configuration;
+    this.currentRoute.initState();
+    this.pages =
+        currentRoute.filterForKey(provider.defaultValueKey)?.toPages() ?? [];
+
+    desktopPages = currentRoute.filterForKey(desktopKey)?.toPages() ?? [];
     notifyListeners();
   }
 
@@ -123,7 +131,10 @@ class BaguetteRouteInformationParser extends RouteInformationParser<CRoute> {
   @override
   Future<CRoute> parseRouteInformation(
       RouteInformation routeInformation) async {
-    return provider.buildFromUri(Uri.parse(routeInformation.location!));
+    var ret = provider.buildFromUri(Uri.parse(routeInformation.location!));
+    print("hello in parse route information");
+    CRoute.deepPrint(ret);
+    return ret;
   }
 
   @override

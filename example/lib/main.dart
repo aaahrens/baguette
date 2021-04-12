@@ -1,5 +1,6 @@
 import 'package:baguette/baguette.dart';
 import 'package:example/bloc/app_state.dart';
+import 'package:example/keys.dart';
 import 'package:example/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -25,7 +26,8 @@ void main() {
   var notFound = CRoute(UriTemplate("/404"), NotFoundRootRoute(), []);
   var provider = DefaultCRouteProvider(routes, notFound);
   var router =
-      BaguetteMaterialRouter.withListener(state, provider, ValueKey("desktop"));
+      BaguetteMaterialRouter.withListener(state, provider, DeskTopKey);
+
   GetIt.I.registerSingleton<CRouteProviderBase>(provider);
   GetIt.I.registerSingleton<BaguetteMaterialRouter>(router);
 
@@ -39,9 +41,11 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routerDelegate: router,
-      routeInformationParser: BaguetteRouteInformationParser(provider),
+    return Material(
+      child: MaterialApp.router(
+        routerDelegate: router,
+        routeInformationParser: BaguetteRouteInformationParser(provider),
+      ),
     );
   }
 }

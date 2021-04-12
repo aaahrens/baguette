@@ -1,11 +1,13 @@
 import 'package:baguette/baguette.dart';
 import 'package:example/bloc/app_state.dart';
 import 'package:example/keys.dart';
-import 'package:example/pages/component/dashboard.dart';
-import 'package:example/pages/component/not_found.dart';
-import 'package:example/pages/component/settings.dart';
+import 'package:example/pages/dashboard.dart';
+import 'package:example/pages/dog_tab.dart';
+import 'package:example/pages/not_found.dart';
+import 'package:example/pages/settings.dart';
 import 'package:example/pages/components/animal_display.dart';
 import 'package:example/pages/components/animal_form.dart';
+import 'package:example/route_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -14,20 +16,19 @@ class DashboardRootRoute extends CRouteBase {
   final appStateBloc = GetIt.I.get<AppStateBloc>();
 
   @override
-  bool get doesStateMatch => appStateBloc.currentState().isDashboard;
+  bool get doesStateMatch => appStateBloc.state.isDashboard;
 
   @override
   initState() {
-    appStateBloc.nextState.isDashboard = true;
+    appStateBloc.valueState.value.isDashboard = true;
   }
 
   @override
-  Set<ValueKey> get valueKey =>
-      Set.of([ValueKey("desktop"), ValueKey("default")]);
+  Set<ValueKey> get valueKey => Set.of([DeskTopKey, ValueKey("default")]);
 
   @override
   removeState() {
-    appStateBloc.nextState.isDashboard = false;
+    appStateBloc.valueState.value.isDashboard = false;
   }
 
   @override
@@ -38,11 +39,11 @@ class SettingsRootRoute extends CRouteBase {
   final appStateBloc = GetIt.I.get<AppStateBloc>();
 
   @override
-  bool get doesStateMatch => appStateBloc.currentState().isSettings;
+  bool get doesStateMatch => appStateBloc.state.isSettings;
 
   @override
   initState() {
-    appStateBloc.nextState.isSettings = true;
+    appStateBloc.state.isSettings = true;
   }
 
   @override
@@ -50,7 +51,7 @@ class SettingsRootRoute extends CRouteBase {
 
   @override
   void removeState() {
-    appStateBloc.nextState.isSettings = false;
+    appStateBloc.state.isSettings = false;
   }
 
   @override
@@ -75,17 +76,17 @@ class NotFoundRootRoute extends CRouteBase {
 }
 
 /// Tab Routes
-class TurtleTab extends CRouteBase {
+class TurtleTab extends CRouteBase with WrapWithScaffoldDesktopWidget {
   final appStateBloc = GetIt.I.get<AppStateBloc>();
 
   @override
   initState() {
-    appStateBloc.nextState.tab = AppTab.Turtle;
+    appStateBloc.state.tab = AppTab.Turtle;
   }
 
   @override
   removeState() {
-    appStateBloc.nextState.tab = null;
+    appStateBloc.state.tab = null;
   }
 
   @override
@@ -97,10 +98,10 @@ class TurtleTab extends CRouteBase {
       );
 
   @override
-  bool get doesStateMatch => appStateBloc.currentState().tab == AppTab.Turtle;
+  bool get doesStateMatch => appStateBloc.state.tab == AppTab.Turtle;
 }
 
-class CatTab extends CRouteBase {
+class CatTab extends CRouteBase with WrapWithScaffoldDesktopWidget {
   final appStateBloc = GetIt.I.get<AppStateBloc>();
 
   @override
@@ -111,19 +112,19 @@ class CatTab extends CRouteBase {
       );
 
   @override
-  bool get doesStateMatch => appStateBloc.currentState().tab == AppTab.Cat;
+  bool get doesStateMatch => appStateBloc.state.tab == AppTab.Cat;
 
   @override
-  Set<ValueKey> get valueKey => Set.from([CatKey]);
+  Set<ValueKey> get valueKey => Set.from([CatKey, DeskTopKey]);
 
   @override
   initState() {
-    appStateBloc.nextState.tab = AppTab.Cat;
+    appStateBloc.state.tab = AppTab.Cat;
   }
 
   @override
   removeState() {
-    appStateBloc.nextState.tab = null;
+    appStateBloc.state.tab = null;
   }
 }
 
@@ -131,23 +132,24 @@ class DogTab extends CRouteBase {
   final appStateBloc = GetIt.I.get<AppStateBloc>();
 
   @override
-  Set<ValueKey> get valueKey => Set.of([DogKey]);
+  Set<ValueKey> get valueKey => Set.of([DogKey, DeskTopKey]);
 
   @override
-  bool get doesStateMatch => appStateBloc.currentState().tab == AppTab.Dog;
+  bool get doesStateMatch => appStateBloc.state.tab == AppTab.Dog;
 
   @override
-  Widget get baseComponent => AnimalForm(type: "dog");
+  Widget get baseComponent => DogTabPage();
 
   @override
   initState() {
-    appStateBloc.nextState.tab = AppTab.Dog;
+    appStateBloc.state.tab = AppTab.Dog;
   }
 
   @override
   removeState() {
-    appStateBloc.nextState.tab = null;
+    appStateBloc.state.tab = null;
   }
+
 }
 
 class AnimalRoute extends CRouteBase {
@@ -158,27 +160,33 @@ class AnimalRoute extends CRouteBase {
 
   @override
   bool get doesStateMatch =>
-      appStateBloc.currentState().animalName != null &&
-      appStateBloc.currentState().animalColor != null;
+      appStateBloc.state.animalName != null &&
+      appStateBloc.state.animalColor != null;
 
   @override
-  void initState() {}
+  void initState() {
+    print("calling init state in params, did match");
+  }
 
   @override
-  void removeState() {}
+  void removeState() {
+    appStateBloc.valueState.value.animalName = null;
+    appStateBloc.valueState.value.animalColor = null;
+    appStateBloc.valueState.value.animalType = null;
+  }
 
   @override
   void parseUriToState(Map<String, String?> params) {
-    appStateBloc.nextState.animalName = params["animal_name"];
-    appStateBloc.nextState.animalColor = params["animal_type"];
-    appStateBloc.nextState.animalType = params["animal_color"];
+    appStateBloc.valueState.value.animalName = params["animal_name"];
+    appStateBloc.valueState.value.animalColor = params["animal_type"];
+    appStateBloc.valueState.value.animalType = params["animal_color"];
   }
 
   @override
   Map<String, String> get variables => {
-        "animal_name": appStateBloc.currentState().animalName ?? "",
-        "animal_type": appStateBloc.currentState().animalType ?? "",
-        "animal_color": appStateBloc.currentState().animalColor ?? "",
+        "animal_name": appStateBloc.state.animalName ?? "unknown",
+        "animal_type": appStateBloc.state.animalType ?? "unknown",
+        "animal_color": appStateBloc.state.animalColor ?? "unknown",
       };
 
   @override

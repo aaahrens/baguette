@@ -1,9 +1,4 @@
-import 'dart:async';
-
-import 'package:baguette/baguette.dart';
-import 'package:example/main.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:flutter/material.dart';
 
 enum AppTab { Dog, Cat, Turtle }
 
@@ -46,46 +41,38 @@ extension TabE on AppTab {
 
 //Our current app state is a singleton, this wrap the default core to a stream for listener for key
 class AppStateBloc with ChangeNotifier {
-  AppState nextState = AppState();
-  BehaviorSubject<AppState> stream =
-      BehaviorSubject<AppState>.seeded(AppState());
+  ValueNotifier<AppState> valueState = ValueNotifier<AppState>(AppState());
 
-  clear() {
-    nextState = AppState();
+  AppState get state => valueState.value;
+
+  AppStateBloc() {
+    valueState.addListener(this.notifyListeners);
   }
 
   addTab(AppTab? tab) {
-    var currentState = stream.value;
-    if (currentState == null) {
-      return;
-    }
-    currentState.tab = tab;
-    stream.add(currentState);
-    notifyListeners();
+    valueState.value.tab = tab;
+    valueState.notifyListeners();
   }
 
   toDashboard() {
-    stream.add(AppState(isDashboard: true));
-    notifyListeners();
+    valueState.value = AppState();
+    state.isDashboard = true;
+    state.tab = AppTab.Dog;
+    valueState.notifyListeners();
   }
 
   toAnimal(String name, String color, String type) {
-    var currentState = stream.value;
-    if (currentState == null) {
-      return;
-    }
-    currentState.animalName = name;
-    currentState.animalColor = color;
-    currentState.animalType = type;
-    notifyListeners();
+    state.animalName = name;
+    state.animalColor = color;
+    state.animalType = type;
+    valueState.notifyListeners();
   }
 
-  AppState currentState() {
-    return stream.value ?? AppState();
-  }
-
-  emit() {
-    stream.add(nextState);
+  clearAnimal() {
+    state.animalName = null;
+    state.animalColor = null;
+    state.animalType = null;
+    valueState.notifyListeners();
   }
 }
 
@@ -93,11 +80,13 @@ class AppState {
   AppTab? tab;
   bool isSettings = false;
   bool isProfile = false;
-  bool isDashboard;
+  bool isDashboard = false;
 
   String? animalName;
   String? animalColor;
   String? animalType;
 
-  AppState({this.isDashboard = false});
+  String meow() {
+    return "${this.isDashboard} ${this.tab} ${this.animalName} ${this.animalColor}";
+  }
 }

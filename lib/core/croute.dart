@@ -58,14 +58,15 @@ class CRoute {
     this.routePage.initState();
   }
 
-  _handleChildPop() {
-    this.routePage.removeState();
-    if (this.child == null) return;
-  }
-
+  /// [handlePop] will call [CRouteBase.removeState]] on the last item in the chain
+  /// of CRoutes.
   handlePop() {
-    this.child?._handleChildPop();
-    this.routePage.removeState();
+    var c = this.child;
+    if (c == null) {
+      this.routePage.removeState();
+      return;
+    }
+    c.handlePop();
   }
 
   handleRedirect() {
@@ -121,7 +122,6 @@ class CRoute {
               : "${parentBuilder.path}/${childBuilder.path}";
       parentBuilder.queryParameters.addAll(childBuilder.queryParameters);
     }
-    print("parent of instance ${this.routePage} ${parentBuilder.path}");
     return parentBuilder;
   }
 

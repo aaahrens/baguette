@@ -21,11 +21,16 @@ class AnimalDisplay extends StatelessWidget {
           children: [
             Text("showing animal here"),
             Text(
-                "showing animal name ${appStateBloc.currentState().animalName}"),
+                "showing animal name ${appStateBloc.state.animalName}"),
             Text(
-                "showing animal color ${appStateBloc.currentState().animalColor}"),
+                "showing animal color ${appStateBloc.state.animalColor}"),
             Text(
-                "showing animal type ${appStateBloc.currentState().animalType}"),
+                "showing animal type ${appStateBloc.state.animalType}"),
+            ElevatedButton(
+                onPressed: () {
+                  appStateBloc.clearAnimal();
+                },
+                child: Text("edit state directly to go back"))
           ],
         ),
       ),
