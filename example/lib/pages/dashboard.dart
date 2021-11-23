@@ -3,9 +3,12 @@ import 'package:example/bloc/app_state.dart';
 import 'package:example/pages/components/animal_preview.dart';
 import 'package:example/keys.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 
 class DashboardPage extends StatelessWidget {
+  final AppStateBloc appStateBloc;
+
+  const DashboardPage({Key? key, required this.appStateBloc}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -13,7 +16,9 @@ class DashboardPage extends StatelessWidget {
         if (constraints.maxWidth >= 700) {
           return DesktopDashboardPage();
         } else {
-          return MobileDashboardPage();
+          return MobileDashboardPage(
+            appStateBloc: this.appStateBloc,
+          );
         }
       },
     );
@@ -38,15 +43,19 @@ class DesktopDashboardPage extends StatelessWidget {
 }
 
 class MobileDashboardPage extends StatelessWidget {
-  final appStateBloc = GetIt.I.get<AppStateBloc>();
-  final router = GetIt.I.get<BaguetteMaterialRouter>();
+  final AppStateBloc appStateBloc;
+
+  const MobileDashboardPage(
+      {Key? key, required this.appStateBloc})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AppState>(
         valueListenable: appStateBloc.valueState,
         builder: (ctx, appState, child) {
-          var currentRoute = router.currentRoute;
+          var currentRoute = appStateBloc.currentRoute;
+          if (currentRoute == null) return Container();
           return Scaffold(
               appBar: AppBar(
                   title: Text(currentRoute.uriBuilder.build().toString())),

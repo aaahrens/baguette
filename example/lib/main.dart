@@ -1,42 +1,50 @@
 import 'package:baguette/baguette.dart';
 import 'package:example/bloc/app_state.dart';
 import 'package:example/keys.dart';
+import 'package:example/pages/not_found.dart';
 import 'package:example/routes.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 import 'package:uri/uri.dart';
 
 void main() {
   var state = AppStateBloc();
-  GetIt.I.registerSingleton<AppStateBloc>(state);
 
-  var animalCRoute = CRoute(
+  var animalCRoute = Baguette(
       UriTemplate("{animal_name}{?animal_color,animal_type}"),
-      AnimalRoute(), []);
+      () => AnimalRoute(state), []);
 
-  List<CRoute> routes = [
-    CRoute(UriTemplate("/settings"), SettingsRootRoute(), []),
-    CRoute(UriTemplate("/"), DashboardRootRoute(), [
-      CRoute(UriTemplate("cats"), CatTab(), [animalCRoute]),
-      CRoute(UriTemplate("dogs"), DogTab(), [animalCRoute]),
-      CRoute(UriTemplate("turtles"), TurtleTab(), [animalCRoute])
+  List<Baguette> routes = [
+    Baguette(UriTemplate("/settings"), () => SettingsRootRoute(state), []),
+    Baguette(UriTemplate("/"), () => DashboardRootRoute(state), [
+      Baguette(UriTemplate("cats"), () => CatTab(state), [animalCRoute]),
+      Baguette(UriTemplate("dogs"), () => DogTab(state), [animalCRoute]),
+      Baguette(UriTemplate("turtles"), () => TurtleTab(state), [animalCRoute])
     ]),
   ];
 
-  var notFound = CRoute(UriTemplate("/404"), NotFoundRootRoute(), []);
-  var provider = DefaultCRouteProvider(routes, notFound);
-  var router =
-      BaguetteMaterialRouter.withListener(state, provider, DeskTopKey);
+  var notFound =
+      Baguette(UriTemplate("/404"), () => NotFoundRootRoute(state), []);
+  var provider = DefaultCRouteProvider(routes, notFound, DefaultKey);
 
-  GetIt.I.registerSingleton<CRouteProviderBase>(provider);
-  GetIt.I.registerSingleton<BaguetteMaterialRouter>(router);
+  var router = BaguetteMaterialRouter.withListener(
+      state, provider, DeskTopKey, routes.last);
 
-  runApp(MyApp());
+  router.registerCallBack((c) {
+    state.currentRoute = c;
+  });
+
+  runApp(MyApp(
+    provider: provider,
+    router: router,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  final provider = GetIt.I.get<CRouteProviderBase>();
-  final router = GetIt.I.get<BaguetteMaterialRouter>();
+  final BaguetteComposer provider;
+  final BaguetteMaterialRouter router;
+
+  const MyApp({Key? key, required this.provider, required this.router})
+      : super(key: key);
 
   // This widget is the root of your application.
   @override

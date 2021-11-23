@@ -1,4 +1,4 @@
-import 'package:baguette/core/croute.dart';
+import 'package:baguette/core/baguette.dart';
 import 'package:baguette/core/provider.dart';
 import 'package:flutter/material.dart';
 

@@ -1,4 +1,4 @@
-import 'package:baguette/core/croute.dart';
+import 'package:baguette/core/baguette.dart';
 import 'package:baguette/core/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,14 +14,14 @@ void main() {
   test("export and rehydrate url with parameters", () {
     var stateProvider = TestState(isCats: true);
     var routes = [
-      CRoute(UriTemplate("/"), RootRoute(stateProvider), [
-        CRoute(UriTemplate("cats"), CatRoute(stateProvider), [
-          CRoute(UriTemplate("{catname}"), NamedCatRoute(stateProvider), [])
+      Baguette(UriTemplate("/"), RootRoute(stateProvider), [
+        Baguette(UriTemplate("cats"), CatRoute(stateProvider), [
+          Baguette(UriTemplate("{catname}"), NamedCatRoute(stateProvider), [])
         ])
       ])
     ];
     var notFound =
-        CRoute(UriTemplate("/notfound"), RootRoute(stateProvider), []);
+        Baguette(UriTemplate("/notfound"), RootRoute(stateProvider), []);
     var provider = DefaultCRouteProvider(routes, notFound);
     var newCRoute = provider.buildFromState();
     print(newCRoute.uriBuilder.build().toString());
@@ -29,7 +29,7 @@ void main() {
     var anotherRoute = provider.buildFromUri(Uri.parse("/cats/sirmeow"));
     print(anotherRoute.uriBuilder.build().toString());
     var anotherReplaceRoute = provider.buildFromUri(Uri.parse("/cats"));
-    print(CRoute.deepPrint(anotherRoute));
+    print(Baguette.deepPrint(anotherRoute));
     expect("", "");
   });
 

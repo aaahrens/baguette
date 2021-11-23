@@ -1,10 +1,12 @@
-import 'package:baguette/core/croute.dart';
+import 'package:baguette/core/baguette.dart';
 import 'package:flutter/cupertino.dart';
 
-abstract class CRouteProviderBase {
-  final List<CRoute> routes;
+abstract class BaguetteComposer {
+  /// [routes] are the totality list of routes that can exist
+  final List<Baguette> routes;
 
-  final CRoute notFound;
+  /// [notFound] is the route shown or instantiated if no routes match
+  final Baguette notFound;
 
   /// [doOnRemove]
   List<void Function()> doOnRemove = [];
@@ -18,41 +20,43 @@ abstract class CRouteProviderBase {
   List<void Function()> doPostInit = [];
 
   /// [defaultValueKey]
-  ValueKey defaultValueKey = ValueKey("default");
+  ValueKey get defaultValueKey;
 
-  CRouteProviderBase(this.routes, this.notFound);
+  BaguetteComposer(this.routes, this.notFound);
 
   /// [buildFromState] will construct a CRoute from the existing state, using
-  /// [CRouteProviderBase.doesStateMatch] and parsing [CRouteProviderBase.variables]
+  /// [BaguetteComposer.doesStateMatch] and parsing [BaguetteComposer.variables]
   /// to example uri templates.
   /// It does not call any lifecycle methods; that responsibility is designated
   /// to the caller.
-  CRoute buildFromState() {
+  Baguette buildFromState() {
     performInit();
     var toReturn = notFound;
     for (var e in this.routes) {
-      if (e.routePage.doesStateMatch) {
-        toReturn = CRoute(e.template, e.routePage, e.children,
+      if (e.baseFactory().doesStateMatch) {
+        toReturn = Baguette(e.template, e.baseFactory, e.children,
             child: e.parseChildrenFromState());
       }
     }
     performPostInit();
     return toReturn;
   }
+
   /// [buildFromUri] will construct a CRoute from a well formed Uri.
   /// It does not call any lifecycle methods; that responsibility is designated
   /// to the caller.
-  CRoute buildFromUri(Uri uri) {
+  /// It is best to use this with
+  Baguette buildFromUri(Uri uri) {
     performInit();
     var toReturn = notFound;
     for (var e in routes) {
       if (e.isUrlCorrect(uri)) {
         var uriMatch = e.parseUri(uri);
-        CRoute? newChild;
+        Baguette? newChild;
         if (uriMatch != null) {
           newChild = e.parseChildren(uriMatch.rest);
           toReturn =
-              CRoute(e.template, e.routePage, e.children, child: newChild);
+              Baguette(e.template, e.baseFactory, e.children, child: newChild);
           break;
         }
       }
@@ -74,9 +78,11 @@ abstract class CRouteProviderBase {
   }
 }
 
-class DefaultCRouteProvider extends CRouteProviderBase with ChangeNotifier {
-  ValueKey defaultValueKey = ValueKey("default");
-
-  DefaultCRouteProvider(List<CRoute> routes, CRoute notFound)
+class DefaultCRouteProvider extends BaguetteComposer with ChangeNotifier {
+  final ValueKey dk;
+  DefaultCRouteProvider(List<Baguette> routes, Baguette notFound, this.dk)
       : super(routes, notFound);
+
+  @override
+  ValueKey get defaultValueKey => this.dk;
 }

@@ -1,21 +1,24 @@
 import 'package:example/bloc/app_state.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 
 class AnimalForm extends StatefulWidget {
   final String type;
+  final AppStateBloc appStateBloc;
 
-  AnimalForm({Key? key, this.type = "cat"}) : super(key: key);
+  AnimalForm({Key? key, this.type = "cat", required this.appStateBloc})
+      : super(key: key);
 
   @override
-  _AnimalFormState createState() => _AnimalFormState();
+  _AnimalFormState createState() => _AnimalFormState(this.appStateBloc);
 }
 
 class _AnimalFormState extends State<AnimalForm> {
   final formKey = GlobalKey<FormState>();
-  final appStateBloc = GetIt.I.get<AppStateBloc>();
+  final AppStateBloc appStateBloc;
 
   String name = "", color = "";
+
+  _AnimalFormState(this.appStateBloc);
 
   @override
   Widget build(BuildContext context) {

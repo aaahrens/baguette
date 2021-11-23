@@ -1,61 +1,28 @@
+import 'package:baguette/core/baguette_base.dart';
 import 'package:flutter/material.dart';
 import 'package:uri/uri.dart';
 
-abstract class CRouteBase extends Page {
-  final bool renderAsPage;
-
-  Widget get baseComponent;
-
-  CRouteBase({this.renderAsPage = true, this.widgetMap = const {}});
-
-  void parseUriToState(Map<String, String?> params) {}
-
-  bool get doesStateMatch;
-
-  void initState();
-
-  void removeState();
-
-  Set<ValueKey> get valueKey;
-
-  Map<String, String> get variables => {};
-
-  bool shouldRedirect(CRoute? nextRoute) {
-    return false;
-  }
-
-  void performRedirect() {}
-
-  final Map<ValueKey, Widget Function()> widgetMap;
-
-  @override
-  Route createRoute(BuildContext context) {
-    return MaterialPageRoute(
-        settings: this, builder: (c) => this.baseComponent);
-  }
-}
-
-class CRoute {
+class Baguette<T extends BaguetteBase> {
   final UriTemplate template;
-  final List<CRoute> children;
+  final List<Baguette> children;
 
-  final CRoute? child;
-  final CRouteBase routePage;
+  final Baguette? child;
+  final BaguetteBase Function() baseFactory;
 
-  const CRoute(this.template, this.routePage, this.children, {this.child});
+  const Baguette(this.template, this.baseFactory, this.children, {this.child});
 
   bool isUrlCorrect(Uri uri) {
     return UriParser(this.template, queryParamsAreOptional: true).matches(uri);
   }
 
   _childInitState() {
-    this.routePage.initState();
+    this.baseFactory().initState();
     this.child?._childInitState();
   }
 
   initState() {
     child?._childInitState();
-    this.routePage.initState();
+    this.baseFactory().initState();
   }
 
   /// [handlePop] will call [CRouteBase.removeState]] on the last item in the chain
@@ -63,28 +30,21 @@ class CRoute {
   handlePop() {
     var c = this.child;
     if (c == null) {
-      this.routePage.removeState();
+      this.baseFactory().removeState();
       return;
     }
     c.handlePop();
   }
 
-  handleRedirect() {
-    if (this.routePage.shouldRedirect(this.child)) {
-      this.routePage.performRedirect();
-    }
-    this.child?.handleRedirect();
-  }
-
   ///[uri] is the remaining url post-processing from the current routePage
   ///
-  CRoute? parseChildren(Uri uri) {
+  Baguette? parseChildren(Uri uri) {
     for (var shell in this.children) {
       if (shell.isUrlCorrect(uri)) {
         var r = shell.parseUri(uri);
-        CRoute? newChild;
+        Baguette? newChild;
         if (r != null) newChild = shell.parseChildren(r.rest);
-        return CRoute(shell.template, shell.routePage, shell.children,
+        return Baguette(shell.template, shell.baseFactory, shell.children,
             child: newChild);
       }
     }
@@ -96,15 +56,15 @@ class CRoute {
   ///remaining uri to its children
   UriMatch? parseUri(Uri uri) {
     var a = UriParser(this.template, queryParamsAreOptional: true).match(uri);
-    if (a != null) this.routePage.parseUriToState(a.parameters);
+    if (a != null) this.baseFactory().parseUriToState(a.parameters);
     return a;
   }
 
-  CRoute? parseChildrenFromState() {
+  Baguette? parseChildrenFromState() {
     for (var child in this.children) {
-      if (child.routePage.doesStateMatch) {
+      if (child.baseFactory().doesStateMatch) {
         var subActive = child.parseChildrenFromState();
-        return CRoute(child.template, child.routePage, child.children,
+        return Baguette(child.template, child.baseFactory, child.children,
             child: subActive);
       }
     }
@@ -112,7 +72,7 @@ class CRoute {
 
   UriBuilder get uriBuilder {
     UriBuilder parentBuilder = UriBuilder.fromUri(
-        Uri.parse(this.template.expand(this.routePage.variables)));
+        Uri.parse(this.template.expand(this.baseFactory().variables)));
     if (this.child != null) {
       UriBuilder childBuilder = this.child!.uriBuilder;
       parentBuilder.path = childBuilder.path == ""
@@ -125,29 +85,29 @@ class CRoute {
     return parentBuilder;
   }
 
-  CRoute? _forKey(ValueKey key) {
-    if (this.routePage.valueKey.contains(key)) {
+  Baguette? _forKey(ValueKey key) {
+    if (this.baseFactory().valueKeys.contains(key)) {
       var subActive = this.child?._forKey(key);
-      if (!this.routePage.renderAsPage) return subActive;
-      return CRoute(this.template, this.routePage, this.children,
+      if (!this.baseFactory().shouldRender) return subActive;
+      return Baguette(this.template, this.baseFactory, this.children,
           child: subActive);
     }
     return this.child?._forKey(key);
   }
 
-  CRoute? filterForKey(ValueKey key) {
+  Baguette? filterForKey(ValueKey key) {
     var currentChild = this.child;
-    if (this.routePage.valueKey.contains(key)) {
+    if (this.baseFactory().valueKeys.contains(key)) {
       var subActive = currentChild?._forKey(key);
-      if (!this.routePage.renderAsPage) return subActive;
-      return CRoute(this.template, this.routePage, this.children,
+      if (!this.baseFactory().shouldRender) return subActive;
+      return Baguette(this.template, this.baseFactory, this.children,
           child: subActive);
     }
     return currentChild?._forKey(key);
   }
 
   List<Page> toPages() {
-    List<Page> a = [this.routePage];
+    List<Page> a = [this.baseFactory()];
     var currentChild = this.child;
     if (currentChild != null) {
       a.addAll(currentChild.toPages());
@@ -157,18 +117,18 @@ class CRoute {
 
   Widget firstComponentForKeys(Set<ValueKey> l) {
     var currentChild = this.child;
-    if (this.routePage.valueKey.intersection(l).length != 0) {
-      return this.routePage.baseComponent;
+    if (this.baseFactory().valueKeys.intersection(l).length != 0) {
+      return this.baseFactory().baseComponent;
     }
     if (currentChild == null) return Container();
     return currentChild.firstComponentForKeys(l);
   }
 
-  static deepPrint(CRoute? c) {
-    CRoute? tmp = c;
+  static deepPrint(Baguette? c) {
+    Baguette? tmp = c;
     String space = "  ";
     while (tmp != null) {
-      print("$space ${tmp.routePage}");
+      print("$space ${tmp.baseFactory}");
       space += "  ";
       tmp = tmp.child;
     }
