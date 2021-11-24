@@ -1,3 +1,4 @@
+import 'package:baguette/baguette.dart';
 import 'package:flutter/material.dart';
 
 enum AppTab { Dog, Cat, Turtle }
@@ -44,6 +45,8 @@ class AppStateBloc with ChangeNotifier {
   ValueNotifier<AppState> valueState = ValueNotifier<AppState>(AppState());
 
   AppState get state => valueState.value;
+
+  Baguette? currentRoute;
 
   AppStateBloc() {
     valueState.addListener(this.notifyListeners);

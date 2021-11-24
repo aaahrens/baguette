@@ -1,21 +1,19 @@
 import 'package:baguette/baguette.dart';
 import 'package:example/bloc/app_state.dart';
 import 'package:flutter/material.dart';
-import 'package:get_it/get_it.dart';
 
 class AnimalDisplay extends StatelessWidget {
   final String name;
   final String color;
-  final appStateBloc = GetIt.I.get<AppStateBloc>();
-  final router = GetIt.I.get<BaguetteMaterialRouter>();
+  final AppStateBloc appStateBloc;
 
-  AnimalDisplay({Key? key, this.name = "", this.color = ""}) : super(key: key);
+  AnimalDisplay({Key? key, this.name = "", this.color = "", required this.appStateBloc}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text(router.currentRoute.uriBuilder.build().toString())),
+          title: Text("I'm an animal")),
       body: Container(
         child: Column(
           children: [

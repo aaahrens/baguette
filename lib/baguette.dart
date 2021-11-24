@@ -1,11 +1,8 @@
 library baguette;
 
-export 'mixins/tab_router.dart';
-export 'mixins/material_router.dart';
+export 'core/router.dart';
+export 'core/composer.dart';
+export 'core/baguette.dart';
+export 'core/baguette_base.dart';
 
-export 'core/mixins.dart';
-export 'core/provider.dart';
-export 'core/croute.dart';
-
-export 'components/redirect.dart';
-export 'components/default_router.dart';
+export 'package:baguette/prebuilt/tiles.dart';
