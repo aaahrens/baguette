@@ -5,8 +5,10 @@ import 'package:example/pages/not_found.dart';
 import 'package:example/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:uri/uri.dart';
+import 'configure_nonweb.dart' if (dart.library.html) 'configure_web.dart';
 
 void main() {
+  configureApp();
   var state = AppStateBloc();
 
   var animalCRoute = Baguette(
@@ -22,9 +24,11 @@ void main() {
     ]),
   ];
 
+  state.currentRoute = routes.last;
+
   var notFound =
       Baguette(UriTemplate("/404"), () => NotFoundRootRoute(state), []);
-  var provider = DefaultCRouteProvider(routes, notFound, DefaultKey);
+  var provider = DefaultCRouteProvider(routes, notFound, TopLevelKey);
 
   var router = BaguetteMaterialRouter.withListener(
       state, provider, DeskTopKey, routes.last);

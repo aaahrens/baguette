@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:baguette/core/baguette.dart';
-import 'package:baguette/core/provider.dart';
+import 'package:baguette/core/composer.dart';
 import 'package:flutter/cupertino.dart';
 
 class CRouter extends RouterDelegate<Baguette>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<Baguette> {
   final navigatorKey;
   final Baguette route;
-  final void Function(Baguette newCroute) onPop;
+  final void Function(Baguette? newCroute) onPop;
   late List<Page> pages;
 
   CRouter(this.navigatorKey, this.route, this.onPop) {
@@ -49,7 +49,8 @@ class BaguetteMaterialRouter extends RouterDelegate<Baguette>
     setPages();
     cn.addListener(() {
       currentRoute = provider.buildFromState();
-      pages = currentRoute.filterForKey(provider.defaultValueKey)?.toPages() ?? [];
+      pages =
+          currentRoute.filterForKey(provider.defaultValueKey)?.toPages() ?? [];
       desktopPages = currentRoute.filterForKey(desktopKey)?.toPages() ?? [];
       notifyListeners();
       runCallbacks();
@@ -112,7 +113,8 @@ class BaguetteMaterialRouter extends RouterDelegate<Baguette>
     this.currentRoute = configuration;
     this.currentRoute.initState();
     setPages();
-    print("pages ${this.pages} curr ${this.currentRoute.filterForKey(provider.defaultValueKey)}");
+    print(
+        "pages ${this.pages} curr ${this.currentRoute.filterForKey(provider.defaultValueKey)}");
     notifyListeners();
     runCallbacks();
   }
@@ -149,10 +151,7 @@ class BaguetteRouteInformationParser extends RouteInformationParser<Baguette> {
   @override
   Future<Baguette> parseRouteInformation(
       RouteInformation routeInformation) async {
-    var ret = provider.buildFromUri(Uri.parse(routeInformation.location!));
-    print("hello in parse route information");
-    Baguette.deepPrint(ret);
-    return ret;
+    return provider.buildFromUri(Uri.parse(routeInformation.location!));
   }
 
   @override

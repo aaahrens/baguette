@@ -22,47 +22,51 @@ class _AnimalFormState extends State<AnimalForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: Column(
-        children: [
-          TextFormField(
-            decoration: const InputDecoration(
-              icon: Icon(Icons.person),
-              labelText: 'Name',
+    return Scaffold(
+      appBar: AppBar(),
+      body: Form(
+        key: formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              decoration: const InputDecoration(
+                icon: Icon(Icons.person),
+                labelText: 'Name',
+              ),
+              validator: (String? s) {
+                if (s == null || s == "") {
+                  return "Cannot be null";
+                }
+              },
+              onChanged: (s) => setState(() {
+                name = s;
+              }),
             ),
-            validator: (String? s) {
-              if (s == null || s == "") {
-                return "Cannot be null";
-              }
-            },
-            onChanged: (s) => setState(() {
-              name = s;
-            }),
-          ),
-          TextFormField(
-            decoration: const InputDecoration(
-              icon: Icon(Icons.person),
-              labelText: 'Color',
+            TextFormField(
+              decoration: const InputDecoration(
+                icon: Icon(Icons.person),
+                labelText: 'Color',
+              ),
+              validator: (String? s) {
+                if (s == null || s == "") {
+                  return "Cannot be null";
+                }
+              },
+              onChanged: (s) => setState(() {
+                color = s;
+              }),
             ),
-            validator: (String? s) {
-              if (s == null || s == "") {
-                return "Cannot be null";
-              }
-            },
-            onChanged: (s) => setState(() {
-              color = s;
-            }),
-          ),
-          ElevatedButton(
-            child: Text("go to animal"),
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                appStateBloc.toAnimal(this.name, this.color, this.widget.type);
-              }
-            },
-          )
-        ],
+            ElevatedButton(
+              child: Text("go to animal"),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  appStateBloc.toAnimal(
+                      this.name, this.color, this.widget.type);
+                }
+              },
+            )
+          ],
+        ),
       ),
     );
   }

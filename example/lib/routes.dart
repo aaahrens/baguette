@@ -6,12 +6,12 @@ import 'package:example/pages/dog_tab.dart';
 import 'package:example/pages/not_found.dart';
 import 'package:example/pages/settings.dart';
 import 'package:example/pages/components/animal_display.dart';
+import 'package:example/route_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class DashboardRootRoute extends BaguetteBase
-    with WithDefaultKeys, AlwaysRender {
-
+    with WithDefaultKeys, WithDesktopKeys, AlwaysRender {
   final AppStateBloc appStateBloc;
 
   DashboardRootRoute(this.appStateBloc);
@@ -137,13 +137,13 @@ class CatTab extends BaguetteBase {
   }
 }
 
-class DogTab extends BaguetteBase {
+class DogTab extends BaguetteBase with WrapWithScaffoldIfMobile {
   final AppStateBloc appStateBloc;
 
   DogTab(this.appStateBloc);
 
   @override
-  Set<ValueKey> get valueKeys => Set.of([DogKey, DeskTopKey]);
+  Set<ValueKey> get valueKeys => Set.of([DogKey]);
 
   @override
   bool get doesStateMatch => appStateBloc.state.tab == AppTab.Dog;
@@ -162,7 +162,7 @@ class DogTab extends BaguetteBase {
   }
 }
 
-class AnimalRoute extends BaguetteBase {
+class AnimalRoute extends BaguetteBase with WrapWithScaffoldIfMobile {
   final AppStateBloc appStateBloc;
 
   AnimalRoute(this.appStateBloc);
@@ -180,6 +180,7 @@ class AnimalRoute extends BaguetteBase {
 
   @override
   void removeState() {
+
     appStateBloc.valueState.value.animalName = null;
     appStateBloc.valueState.value.animalColor = null;
     appStateBloc.valueState.value.animalType = null;
@@ -200,5 +201,5 @@ class AnimalRoute extends BaguetteBase {
       };
 
   @override
-  Set<ValueKey> get valueKeys => Set.of([DefaultKey, AnimalKey]);
+  Set<ValueKey> get valueKeys => Set.of([AnimalKey, ...tabKeys]);
 }
