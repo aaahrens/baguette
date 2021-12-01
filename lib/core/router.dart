@@ -35,7 +35,7 @@ class CRouter extends RouterDelegate<Baguette>
 
 class BaguetteMaterialRouter extends RouterDelegate<Baguette>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin<Baguette> {
-  final GlobalKey<NavigatorState> navKey = GlobalKey();
+  GlobalKey<NavigatorState> navKey = GlobalKey();
   final BaguetteComposer provider;
 
   Baguette currentRoute;
